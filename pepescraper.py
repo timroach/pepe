@@ -91,7 +91,32 @@ class pagescraper:
         for item in failed:
             print(item)
 
-
+    def scraperaredotcom(self, url):
+        print("Scraping page " + url + " into folder " + self.targetfolder)
+        counter = 0
+        unsuccessful = 0
+        imgurls = []
+        failed = []
+        reqresult = requests.get(url)
+        if reqresult.status_code == 200:
+            soup = bs(reqresult.content, "html.parser")
+            imgdivs = soup.findAll('figure',{'class':'gallery-item'})
+            for div in imgdivs:
+                kids = div.findAll("img")
+                imgurl = kids[0].attrs['data-orig-file']
+                image = requests.get(imgurl)
+                if image.status_code == 200:
+                    imgnameparts = image.url.split('/')
+                    print("Scraping image " + str(counter) + " : " + imgnameparts[-1])
+                    self.saveimage(image.content, imgnameparts[-1])
+                    counter += 1
+                    imgurls.append(imgurl)
+                else:
+                    unsuccessful += 1
+                    failed.append(imgurl)
+        print("Scraped " + str(counter) + " images, " + str(unsuccessful) + " not scraped:")
+        for item in failed:
+            print(item)
 
 
 def main():
@@ -109,11 +134,11 @@ def main():
                       'MarCX',
                       'ytyyY',
                       'L7X7u',
-                      'tX27h'
+                      'tX27h',
+                      'JdVWs'
                       ]
     # imgur gallery IDs to scrape, format as in list above
-    gallerylist = [
-                   ]
+    gallerylist = []
     # Scrape imgur galleries into scrapedImages folder
     for gallery in gallerylist:
         url = 'https://imgur.com/gallery/' + gallery
@@ -121,20 +146,27 @@ def main():
         imgurscrape.scrapeimgurgallery(url)
 
     # stickers.cloud section -------------------------------
-    alreadyscrapedpacks = ['fighting-pepe']
-    packlist = ['pepe-fighting-hkg2',
-                'random-pepe',
-                'pepe-25',
-                'pepe-smoke',
-                'pepe-think',
-                '叉雞飯呀dllm',
-                'pepe-30',
-                'cute-pepe']
+    alreadyscrapedpacks = ['fighting-pepe',
+                           'pepe-fighting-hkg2',
+                           'random-pepe',
+                           'pepe-25',
+                           'pepe-smoke',
+                           'pepe-think',
+                           '叉雞飯呀dllm',
+                           'pepe-30',
+                           'cute-pepe'
+                           ]
+    packlist = []
 
     for pack in packlist:
         url = 'https://stickers.cloud/pack/' + pack
         stickerscrape = pagescraper(pack)
         stickerscrape.scrapestickerpack(url)
+
+    # rare-pepe.com section -----------------------------------
+    url = 'https://rare-pepe.com/'
+    # raredotcomscrape = pagescraper('rarepepedotcom')
+    # raredotcomscrape.scraperaredotcom(url)
     sys.exit()
 
 
